@@ -8,13 +8,16 @@ ENTITY tone IS
 	PORT (
 		clk : IN STD_LOGIC; -- 48.8 kHz audio sampling clock
 		pitch : IN UNSIGNED (13 DOWNTO 0); -- frequency (in units of 0.745 Hz)
-	data : OUT SIGNED (15 DOWNTO 0)); -- signed triangle wave out
+	   data : OUT SIGNED (15 DOWNTO 0);
+	   playing : in std_logic
+	); -- signed triangle wave out
 END tone;
 
 ARCHITECTURE Behavioral OF tone IS
 	SIGNAL count : unsigned (15 DOWNTO 0); -- represents current phase of waveform
 	SIGNAL quad : std_logic_vector (1 DOWNTO 0); -- current quadrant of phase
 	SIGNAL index : signed (15 DOWNTO 0); -- index into current quadrant
+	signal tempData : signed(15 downto 0);
 BEGIN
 	-- This process adds "pitch" to the current phase every sampling period. Generates
 	-- an unsigned 16-bit sawtooth waveform. Frequency is determined by pitch. For
@@ -30,8 +33,12 @@ BEGIN
 	-- This select statement converts an unsigned 16-bit sawtooth that ranges from 65,535
 	-- into a signed 12-bit triangle wave that ranges from -16,383 to +16,383
 	WITH quad SELECT
-	data <= index WHEN "00", -- 1st quadrant
+	tempData <= index WHEN "00", -- 1st quadrant
 	        16383 - index WHEN "01", -- 2nd quadrant
 	        0 - index WHEN "10", -- 3rd quadrant
 	        index - 16383 WHEN OTHERS; -- 4th quadrant
+	        
+	with playing select
+	   data <= tempData when '1',
+	   (others => '0') when '0';
 END Behavioral;

@@ -3,16 +3,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity piano is
     port(
         clk_100MHz : in std_logic;
@@ -23,7 +13,7 @@ entity piano is
         seg : out std_logic_vector(6 downto 0);
         KB_col : OUT STD_LOGIC_VECTOR (4 DOWNTO 1); -- keypad column pins
 	    KB_row : IN STD_LOGIC_VECTOR (4 DOWNTO 1); -- keypad row pins
-	    dac_MCLK : OUT STD_LOGIC; -- outputs to PMODI2L DAC
+	    dac_MCLK : OUT STD_LOGIC; -- these 4 used for speaker DAC
 		dac_LRCK : OUT STD_LOGIC;
 		dac_SCLK : OUT STD_LOGIC;
 		dac_SDIN : OUT STD_LOGIC
@@ -39,7 +29,8 @@ component leddec is
 		anode : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 		seg : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
 		song : IN integer;
-		title : in std_logic
+		title : in std_logic;
+		displaying : in std_logic
 	);
 end component;
 	
@@ -73,36 +64,21 @@ COMPONENT dac_if IS
 END COMPONENT;
 COMPONENT wail IS
     PORT (
-        lo_pitch : IN UNSIGNED (13 DOWNTO 0);
-        hi_pitch : IN UNSIGNED (13 DOWNTO 0);
-        wspeed : IN UNSIGNED (7 DOWNTO 0);
+        note : in std_logic_vector(3 downto 0);
+		playing : in std_logic;
         wclk : IN STD_LOGIC;
         audio_clk : IN STD_LOGIC;
         audio_data : OUT SIGNED (15 DOWNTO 0)
     );
 END COMPONENT;
 
--- speaker constant
-constant Clow : UNSIGNED (13 DOWNTO 0) := to_unsigned (351, 14);
-constant D : UNSIGNED (13 DOWNTO 0) := to_unsigned (394, 14);
-constant E : UNSIGNED (13 DOWNTO 0) := to_unsigned (443, 14);
-constant F : UNSIGNED (13 DOWNTO 0) := to_unsigned (469, 14);
-constant G : UNSIGNED (13 DOWNTO 0) := to_unsigned (526, 14);
-constant A : UNSIGNED (13 DOWNTO 0) := to_unsigned (591, 14);
-constant B : UNSIGNED (13 DOWNTO 0) := to_unsigned (663, 14);
-constant Chigh : UNSIGNED (13 DOWNTO 0) := to_unsigned (702, 14);
-
-signal currFreq : unsigned(13 downto 0) := to_unsigned(0, 14);
-signal currFreqHigh : unsigned(13 downto 0) := to_unsigned(0, 14);
-signal nxFreq : unsigned(13 downto 0) := to_unsigned(0, 14);
-
-CONSTANT wail_speed : UNSIGNED (7 DOWNTO 0) := to_unsigned (8, 8); -- sets wailing speed
 
 -- speaker timing signals
 SIGNAL tcount : unsigned (19 DOWNTO 0) := (OTHERS => '0'); -- timing counter
 SIGNAL data_L, data_R : SIGNED (15 DOWNTO 0); -- 16-bit signed audio data
 SIGNAL dac_load_L, dac_load_R : STD_LOGIC; -- timing pulses to load DAC shift reg.
 SIGNAL slo_clk, sclk, audio_CLK : STD_LOGIC;
+signal playing, nx_playing : std_logic := '0';
 
 -- fsm, keypad, and leddec timing signlas
 signal count: std_logic_vector(20 downto 0);
@@ -124,9 +100,13 @@ signal index: integer := 0;
 signal nx_index: integer := 0;
 signal s, nx_s: std_logic_vector(3 downto 0) := x"F";
 
+-- signals to change 7 seg display
 signal title, nx_title : std_logic := '1';
+signal disp, nx_disp : std_logic := '1';
 
-type state is (SELECT_SONG, BEGIN_SONG, ENTER_NOTE, RELEASE_NOTE, RELEASE_SONG);
+
+type state is (SELECT_SONG, BEGIN_SONG, ENTER_NOTE, RELEASE_NOTE, 
+               RELEASE_SONG, FINISH_SONG, RELEASE_FINISH);
 signal PS, NS: state := SELECT_SONG;
 
 begin
@@ -161,6 +141,7 @@ begin
         end if;
     end process;
     
+    -- timing signals definition
     fsm_clk <= count(20);
     kp_clk <= count(15);
     mpx_clk <= count(19 downto 17);
@@ -169,7 +150,7 @@ begin
     port map(note =>s, index => index, songChoice => choice, length => songLength);
 
     l1: leddec
-    port map(seg => seg, dig=>mpx_clk, data=>s, anode=>anode, song=>choice, title => title);
+    port map(seg => seg, dig=>mpx_clk, data=>s, anode=>anode, song=>choice, title => title, displaying=>disp);
     
     k1: keypad
     port map(samp_ck => kp_clk, col => KB_col, row => KB_row, value => kp_value, hit => kp_hit);
@@ -184,9 +165,8 @@ begin
 		SDATA => dac_SDIN 
 		);
     w1 : wail
-    PORT MAP(lo_pitch => currFreq, -- instantiate wailing siren
-        hi_pitch => currFreqHigh,
-        wspeed => to_unsigned(0,8), 
+    PORT MAP(playing => playing,
+        note => kp_value,
         wclk => slo_clk, 
         audio_clk => audio_clk, 
         audio_data => data_L
@@ -202,24 +182,27 @@ begin
             s <= nx_s;
             choice <= nx_choice;
             title <= nx_title;
-            if (nxFreq = to_unsigned(0,14)) then
-                currFreqHigh <= nxFreq;
-            else
-                currFreqHigh <= nxFreq + 1;
-            end if;
-            
+            disp <= nx_disp;
+            playing <= nx_playing;
         end if;
     end process;
     
     -- fsm comb logic process
     fsm_comb_proc: process(BTNU, BTNC, BTND, kp_hit, kp_value)
     begin
+        -- update the old nx signals
         nx_index <= index;
         nx_s <= s;
         nx_choice <= choice;
         nx_title <= title;
+        nx_disp <= disp;
+        nx_playing <= playing;
+        
         case ps is
             when SELECT_SONG =>
+                -- BTNC = 1 --> BEGIN_SONG
+                -- BTNU or BTND = 1 --> RELEASE_SONG
+                -- else --> SELECT_SONG
                 if (BTNC = '1') then
                     nx_title <= '0';
                     ns <= BEGIN_SONG;
@@ -230,11 +213,17 @@ begin
                     
                     ns <= RELEASE_SONG;
                 elsif (BTNU = '1') then
-                    if (choice < 1) then
+                    if (choice < 3) then
                         nx_choice <= choice + 1;
                     end if;
+                    
+                    ns <= RELEASE_SONG;
+                else
+                    ns <= SELECT_SONG;
                 end if;
             when RELEASE_SONG =>
+                -- BTNU and BTND = 0 --> SELECT_SONG
+                -- else --> RELEASE_SONG
                 if (BTNC = '0' and BTND = '0' and BTNU = '0') then
                     ns <= SELECT_SONG;
                 else
@@ -242,48 +231,65 @@ begin
                 end if;
             
             when BEGIN_SONG =>
+                -- BTNC = 0 --> ENTER_NOTE
+                -- else --> BEGIN_SONG
                 if (BTNC = '0') then
                     ns <= ENTER_NOTE;
                 else   
                     ns <= BEGIN_SONG;
                 end if;
             when ENTER_NOTE =>
-                if (s = kp_value and kp_hit = '1') then
-                    nx_index <= index + 1;
-                end if;
-                
-                if (nx_index > songLength) then
+                -- kp_hit = 1 --> RELEASE_SONG
+                -- index = length --> FINISH_SONG
+                -- else --> ENTER_NOTE
+                if (index > songLength) then
                     nx_index <= 0;
-                end if;
-                
-                if (kp_hit = '1') then
+                    nx_title <= '1';
+                    nx_choice <= -1;
+                    ns <= FINISH_SONG;
+        
+                elsif (kp_hit = '1') then
                     ns <= RELEASE_NOTE;
+                    nx_disp <= '0';
+                    nx_playing <= '1';
+                    
+                    if (s = kp_value) then
+                        nx_index <= index + 1;
+                    end if;
                 else
                     ns <= ENTER_NOTE;
                 end if;
                  
             when RELEASE_NOTE =>
-                case kp_value is
-                    when x"0" => nxFreq <= Clow;
-                    when x"1" => nxFreq <= D;
-                    when x"2" => nxFreq <= E;
-                    when x"3" => nxFreq <= F;
-                    when x"4" => nxFreq <= G;
-                    when x"5" => nxFreq <= A;
-                    when x"6" => nxFreq <= B;
-                    when x"7" => nxFreq <= Chigh;
-                    when others => nxFreq <= to_unsigned(0,14);
-                end case;
-                    
-            
+                -- kp_hit = 0 --> ENTER_NOTE
+                -- else --> RELEASE_NOTE
                 if (kp_hit = '0') then
-                    nxFreq <= to_unsigned(0,14);
                     ns <= ENTER_NOTE;
+                    nx_disp <= '1';
+                    nx_playing <= '0';
                 else
                     ns <= RELEASE_NOTE;
                 end if;
-                
-                
+            when FINISH_SONG =>
+                -- kp_hit = 1 --> RELEASE_FINISH
+                -- else --> FINISH_SONG
+                if (kp_hit = '1') then
+                    nx_choice <= 0;
+                    ns <= RELEASE_FINISH;
+                else
+                    ns <= FINISH_SONG;
+                end if;
+            when RELEASE_FINISH =>
+                -- kp_hit = 0 --> SELECT_SONG
+                -- else --> RELEASE_FINISH
+                if (kp_hit = '0') then
+                    nx_choice <= 0;
+                    nx_index <= 0;
+                    nx_title <= '1';
+                    ns <= SELECT_SONG;
+                else
+                    ns <= RELEASE_FINISH;
+                end if;
         end case;
                         
                             

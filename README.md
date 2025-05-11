@@ -26,3 +26,6 @@
 - Open hardware manager
 - Connect to target board
 - Upload program
+
+
+![fsm](https://github.com/user-attachments/assets/c0d8d970-d7bd-4535-b866-969574a6a1c5)

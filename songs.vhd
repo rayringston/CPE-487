@@ -38,17 +38,38 @@ constant MHLL : MHLLsong := (x"2", x"1", x"0", x"1",
                             x"2", x"2", x"2", 
                             x"1", x"1", x"1", 
                             x"2", x"4", x"4");
-                        
+
+constant TTLSlen: integer := 13;
+
+type TTLSsong is array (0 to TTLSlen) of std_logic_vector(3 downto 0);
+constant TTLS : TTLSsong := (x"0", x"0", x"4", x"4",
+                        x"5", x"5", x"4",
+                        x"3", x"3", x"2", x"2",
+                        x"1", x"1", x"0");
+                   
+constant RRRYBlen : integer := 26;
+
+type RRRYBsong is array (0 to RRRYBlen) of std_logic_vector(3 downto 0);
+constant RRRYB : RRRYBsong := (x"0", x"0", x"0", x"1", x"2",
+                              x"2", x"1", x"2", x"3", x"4",
+                              x"7", x"7", x"7", x"4", x"4", x"4",
+                              x"2", x"2", x"2", x"0", x"0", x"0",
+                              x"4", x"3", x"2", x"1", x"0");
+
 
 begin
 
 with songChoice select
     note <= HCB(index) when 0,
     MHLL(index) when 1,
+    TTLS(index) when 2,
+    RRRYB(index) when 3,
     "1111" when others;
 with songChoice select
     length <= HCBlen when 0,
     MHLLlen when 1,
+    TTLSlen when 2,
+    RRRYBlen when 3,
     0 when others;
 
 end Behavioral;

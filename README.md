@@ -27,6 +27,20 @@
 - Connect to target board
 - Upload program
 
+## 6. Usage Instruction
+- Use the on-board up and down buttons to select a song
+- Click the center button to begin the song
+- From there, click the corresponding note on the keypad to match the note displayed on the 7 segment display
+- Continue to play, and learn simple piano songs
+
+—
+
+# Code & Modifications
+
+## piano.vhd
+*piano.vhd* is the top-level module, and combines the output of all of the lower modules. The file was written from scratch and contains a finite state machine, controlling the functionality of this project. The FSM diagram can be seen below. It also generates the timing for the 7 segment display multiplexer, the keypad sampling clock, and the dac_if and wail modules.
+
+![fsm](https://github.com/user-attachments/assets/a4182262-3fda-463e-9285-300e8fd7b4f8)
 
 
 

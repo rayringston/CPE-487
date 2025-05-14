@@ -35,6 +35,10 @@
 - 
 ## 7. Video Demo
 [Watch Video Here](https://www.youtube.com/shorts/KI-7L2Fd2b4)
+
+https://www.youtube.com/shorts/KI-7L2Fd2b4=<VIDEO ID>
+https://youtu.be/<VIDEO ID>
+
 ---
 
 # Code & Modifications

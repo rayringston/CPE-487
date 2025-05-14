@@ -34,7 +34,7 @@
 - Continue to play, and learn simple piano songs
 - 
 ## 7. Video Demo
-Click on the image below to watch the video!
+Click on the image below to watch the video.
 
 [![Watch the video](https://img.youtube.com/vi/KI-7L2Fd2b4/maxresdefault.jpg)](https://youtu.be/KI-7L2Fd2b4)
 

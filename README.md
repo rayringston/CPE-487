@@ -63,7 +63,7 @@ This module caused the most issue during its implementation. This file was used 
 In order to stop the speaker from making noise, the changes had to be made to this module. When the playing input is 1, the data out of this module is just the sawtooth wave we used during the lab. However, when playing is 0, data out becomes 0 and the speaker becomes silent.
 
 ## dac_if.vhd
-Finally, there is the dac_if, which is used to turn the outputted data from the tone module into noise from the speaker. This module worked perfectly, and did not need any modifications to be functional.
+Finally, there is the dac_if, which is used to turn the outputted data from the tone module into noise from the speaker. This module worked perfectly, and did not need any modifications to be functional. This module, as well as *tone.vhd*, were used in lab 5.
 
 ## piano.xdc
 

@@ -9,6 +9,10 @@
 - ![image](https://github.com/user-attachments/assets/66869f6f-878c-4f6b-b29e-20640a96dc28)
 
 
+https://github.com/user-attachments/assets/84e967ae-8d87-49e0-90ee-43ad72103245
+
+
+
 ## 2. Create new Vivado project called pianoProject
 
 - Create 7 new VHDL source files named *piano, songs, leddec, keypad, dac_if, wail*, and *tone*

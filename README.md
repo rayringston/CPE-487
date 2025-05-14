@@ -32,7 +32,9 @@
 - Click the center button to begin the song
 - From there, click the corresponding note on the keypad to match the note displayed on the 7 segment display
 - Continue to play, and learn simple piano songs
-
+- 
+## 7. Video Demo
+[Watch Video Here](https://www.youtube.com/shorts/KI-7L2Fd2b4)
 ---
 
 # Code & Modifications

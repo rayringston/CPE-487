@@ -33,18 +33,18 @@
 - From there, click the corresponding note on the keypad to match the note displayed on the 7 segment display
 - Continue to play, and learn simple piano songs
 
-—
+---
 
 # Code & Modifications
 
 ## piano.vhd
-*piano.vhd* is the top-level module, and combines the output of all of the lower modules. The file was written from scratch and contains a finite state machine, controlling the functionality of this project. The FSM diagram can be seen below. It also generates the timing for the 7 segment display multiplexer, the keypad sampling clock, and the dac_if and wail modules.
+*piano.vhd* is the top-level module, and combines the output of all of the lower modules. The file was written from scratch and contains a finite state machine, controlling the functionality of this project. The FSM diagram can be seen below. It also generates the timing for the 7 segment display multiplexer, the keypad sampling clock, and the dac_if and wail modules. The onboard inputs used are Pmod Jb ports for the keypad, as well as BTNU, BTND, and BTNC. The outputs used are the the 7 segment display, and Pmod port Ja to output to the speaker.
 
 ![fsm](https://github.com/user-attachments/assets/a4182262-3fda-463e-9285-300e8fd7b4f8)
 
 ## songs.vhd
 
-The songs module contains the various songs we have included in this project. It takes an index and a song choice, and outputs the current note, and the length of the song. Each song is implemented as an array of hex values, each corresponding to a note. Currently, we have 4 songs included, Hot Cross Buns (HCb), Mary had a Little Lamb (HLL), Twinkle Twinkle Little Star (tLS), and Row Row Row Your Boat (rYb).
+The songs module contains the various songs we have included in this project. It takes an index and a song choice, and outputs the current note, and the length of the song. Each song is implemented as an array of hex values, each corresponding to a note. Currently, we have 4 songs included, Hot Cross Buns (HCb), Mary had a Little Lamb (HLL), Twinkle Twinkle Little Star (tLS), and Row Row Row Your Boat (rYb). Since certain characters cannot be displayed on a seven segment display, the abbreviations in parentheses are what is instead displayed.
 
 ## keypad.vhd
 
@@ -69,7 +69,23 @@ Finally, there is the dac_if, which is used to turn the outputted data from the 
 
 This is the constraints file, and includes all of the inputs and outputs of the board. For this project, we used the 100 Mhz clock, the anodes and segments of the 7 segment display, BTNU, BTND, BTNC, Pmod port Ja for the speaker and port Jb for the keypad.
 
+---
+# Difficulties
 
+The largest issue we encountered while creating this system was during the implementation of the speaker. Since the original lab used frequencies as inputs, and had no capability of stopping a note, major modifcations were necessary. Initially we tried sending a frequency of 0 when the note was not supposed to play, but this didn't work. However, this made the intentional notes not play properly, and didn't remove the unintentional ones. It took very long before we realized that the modifications should be made to tone.vhd, and not wail.vhd. Finally, we set the data out from the tone module to be 0, whenever the not was not supposed to be played, which is what worked.
 
+One other difficulty we had was in finding songs to add. This did not affect the actual implementation of our code, but it still worth mentioning. We used the notes from the C major scale, which means that we could only use songs that are also in this scale. Furthermore, many of these simple, traditional songs are very similar, like the Alphabet Song and Twinkle Twinkle Little Star, which have identical melodies.
+
+---
+# Contributions
+Ray Ringston:
+- Setup the finite state machine and the state logic process
+- Created the songs module to store the catalog of songs
+- Modified the 7 segment display varying size messages, and custom messages for the titles
+
+Andrea Antropow:
+- Modified the keypad module, created new mappings and connected it to the other components
+- Implemented the speaker, and added functionality to play a tone only when necessary
+- Performed testing to ensure all aspects performed properly
 
 

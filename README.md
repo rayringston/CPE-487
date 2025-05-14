@@ -6,7 +6,7 @@
 - Connect the plug on the speaker to the green line out audio jack on the I2S2 
 - Similarly, connect the Pmod keypad extension to the JB port
 - See picture below for proper connections
-- ![image](https://github.com/user-attachments/assets/66869f6f-878c-4f6b-b29e-20640a96dc28)
+ ![image](https://github.com/user-attachments/assets/66869f6f-878c-4f6b-b29e-20640a96dc28)
 
 
 ## 2. Create new Vivado project called pianoProject

@@ -18,7 +18,7 @@
 - Open constraints and do the same with *piano.xdc*
 - Alternatively, you can download the code from GitHub and upload it directly into Vivado
 - If done correctly, the resulting module hierarchy can be seen below
-- ![vhdl hierarchy](https://github.com/user-attachments/assets/f79837ed-986b-491a-b3b2-49185b32e86c)
+ ![vhdl hierarchy](https://github.com/user-attachments/assets/f79837ed-986b-491a-b3b2-49185b32e86c)
 
 ## 3. Run synthesis
 ## 4. Run implementation
@@ -32,7 +32,7 @@
 - Click the center button to begin the song
 - From there, click the corresponding note on the keypad to match the note displayed on the 7 segment display
 - Continue to play, and learn simple piano songs
-- 
+  
 ## 7. Video Demo
 
 https://github.com/user-attachments/assets/943e24ff-82d6-484e-8fba-2a8a5e2eb974

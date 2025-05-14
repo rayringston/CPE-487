@@ -36,7 +36,7 @@
 ## 7. Video Demo
 [Watch Video Here](https://www.youtube.com/shorts/KI-7L2Fd2b4)
 
-[![Watch the video](https://img.youtube.com/shorts/KI-7L2Fd2b4/maxresdefault.jpg)](https://youtu.be/KI-7L2Fd2b4)
+[![Watch the video](https://img.youtube.com/vi/KI-7L2Fd2b4/maxresdefault.jpg)](https://youtu.be/KI-7L2Fd2b4)
 
 ---
 
